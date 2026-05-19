@@ -1,0 +1,62 @@
+#%RAML 1.0 DataType
+# =============================================================
+# Тип даних: Enrollment (Запис на курс)
+# Файл: dataTypes/Enrollment.yaml
+# =============================================================
+
+displayName: Enrollment
+description: |
+  Модель запису студента на курс.
+  Фіксує факт участі студента у курсі та прогрес проходження.
+
+type: object
+properties:
+  id:
+    type: string
+    description: Унікальний ідентифікатор запису.
+    required: true
+    example: "enr-001"
+  userId:
+    type: string
+    description: ID студента, який записався на курс.
+    required: true
+    example: "u001"
+  courseId:
+    type: string
+    description: ID курсу, на який виконано запис.
+    required: true
+    example: "course-001"
+  status:
+    type: string
+    description: Поточний статус проходження курсу.
+    enum: [active, completed, cancelled]
+    required: true
+    default: active
+    example: "active"
+  progressPercent:
+    type: integer
+    description: Відсоток завершеності курсу (0–100).
+    minimum: 0
+    maximum: 100
+    required: true
+    default: 0
+    example: 35
+  enrolledAt:
+    type: datetime
+    description: Дата і час запису на курс (UTC, ISO 8601).
+    required: true
+    example: "2025-03-05T14:00:00Z"
+  completedAt:
+    type: datetime
+    description: Дата і час завершення курсу. Null, якщо не завершено.
+    required: false
+    example: null
+
+example:
+  id: "enr-001"
+  userId: "u001"
+  courseId: "course-001"
+  status: "active"
+  progressPercent: 35
+  enrolledAt: "2025-03-05T14:00:00Z"
+  completedAt: null

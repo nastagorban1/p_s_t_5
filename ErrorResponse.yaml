@@ -1,0 +1,51 @@
+#%RAML 1.0 DataType
+# =============================================================
+# Тип даних: ErrorResponse (Відповідь при помилці)
+# Файл: dataTypes/ErrorResponse.yaml
+# =============================================================
+
+displayName: ErrorResponse
+description: |
+  Стандартна структура відповіді при будь-якій помилці API.
+  Використовується для всіх кодів 4xx і 5xx.
+
+type: object
+properties:
+  code:
+    type: string
+    description: Машинозчитуваний код помилки.
+    enum:
+      - VALIDATION_ERROR
+      - NOT_FOUND
+      - UNAUTHORIZED
+      - FORBIDDEN
+      - DUPLICATE_EMAIL
+      - ALREADY_ENROLLED
+      - INTERNAL_SERVER_ERROR
+    required: true
+    example: "VALIDATION_ERROR"
+  message:
+    type: string
+    description: Людиночитуване повідомлення про помилку.
+    required: true
+    example: "Помилка валідації вхідних даних."
+  details:
+    type: array
+    description: Деталізація помилок (наприклад, по конкретних полях).
+    required: false
+    items:
+      type: object
+      properties:
+        field:
+          type: string
+          example: "email"
+        issue:
+          type: string
+          example: "Невірний формат email-адреси."
+
+example:
+  code: "VALIDATION_ERROR"
+  message: "Помилка валідації вхідних даних."
+  details:
+    - field: "email"
+      issue: "Невірний формат email-адреси."

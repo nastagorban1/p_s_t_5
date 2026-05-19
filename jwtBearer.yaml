@@ -1,0 +1,57 @@
+#%RAML 1.0 SecurityScheme
+# =============================================================
+# Фрагмент: Security Scheme — JWT Bearer Token
+# Файл: securitySchemes/jwtBearer.yaml
+# =============================================================
+# Описує механізм автентифікації API.
+# Усі захищені ендпоінти використовують цю схему через securedBy.
+# =============================================================
+
+type: Pass Through
+description: |
+  JWT Bearer Token автентифікація.
+  Клієнт отримує токен при вході (POST /auth/login) і передає
+  його у заголовку Authorization для кожного захищеного запиту.
+
+  Формат заголовку:
+    Authorization: Bearer <jwt_token>
+
+  Токен містить:
+  - userId: ідентифікатор користувача
+  - role: роль (student / instructor / admin)
+  - exp: час закінчення дії (Unix timestamp)
+
+  Ризики при неправильній конфігурації:
+  - відсутній захист → несанкціонований доступ до даних
+  - слабкий секрет підпису → підробка токенів
+  - відсутність перевірки exp → використання прострочених токенів
+  - передача токена у URL → витік через логи сервера
+
+describedBy:
+  headers:
+    Authorization:
+      description: JWT Bearer токен у форматі "Bearer <token>".
+      type: string
+      pattern: "^Bearer [A-Za-z0-9\\-_=]+\\.[A-Za-z0-9\\-_=]+\\.?[A-Za-z0-9\\-_.+/=]*$"
+      example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1MDAxIiwicm9sZSI6InN0dWRlbnQifQ.abc123"
+  responses:
+    401:
+      description: Токен відсутній, прострочений або недійсний.
+      body:
+        application/json:
+          properties:
+            code: string
+            message: string
+          example:
+            code: "UNAUTHORIZED"
+            message: "Токен відсутній або недійсний. Виконайте вхід повторно."
+    403:
+      description: Токен дійсний, але користувач не має прав для цієї операції.
+      body:
+        application/json:
+          properties:
+            code: string
+            message: string
+          example:
+            code: "FORBIDDEN"
+            message: "Доступ заборонено. Недостатньо прав для виконання операції."

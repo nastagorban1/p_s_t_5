@@ -1,0 +1,54 @@
+#%RAML 1.0 DataType
+# =============================================================
+# Тип даних: User (Користувач)
+# Файл: dataTypes/User.yaml
+# =============================================================
+
+displayName: User
+description: |
+  Модель користувача навчальної платформи EduFlow.
+  Може мати одну з трьох ролей: student, instructor, admin.
+
+type: object
+properties:
+  id:
+    type: string
+    description: Унікальний ідентифікатор (генерується системою).
+    required: true
+    example: "u001"
+  fullName:
+    type: string
+    description: Повне ім'я користувача.
+    minLength: 2
+    maxLength: 200
+    required: true
+    example: "Іван Петренко"
+  email:
+    type: string
+    description: Електронна пошта (унікальна в системі, використовується для входу).
+    required: true
+    example: "ivan.petrenko@example.com"
+  role:
+    type: string
+    description: Роль користувача у системі.
+    enum: [student, instructor, admin]
+    required: true
+    example: "student"
+  avatarUrl:
+    type: string
+    description: URL аватара користувача (необов'язкове).
+    required: false
+    example: "https://cdn.eduflow.example.com/avatars/u001.png"
+  createdAt:
+    type: datetime
+    description: Дата і час реєстрації (UTC, ISO 8601). Генерується автоматично.
+    required: true
+    example: "2025-03-01T10:00:00Z"
+
+example:
+  id: "u001"
+  fullName: "Іван Петренко"
+  email: "ivan.petrenko@example.com"
+  role: "student"
+  avatarUrl: "https://cdn.eduflow.example.com/avatars/u001.png"
+  createdAt: "2025-03-01T10:00:00Z"

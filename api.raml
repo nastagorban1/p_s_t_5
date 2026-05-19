@@ -1,0 +1,439 @@
+#%RAML 1.0
+# =============================================================
+# EduFlow Learning Platform API — Головний файл специфікації
+# Версія: 1.0.0 | Статус: Development
+# Підхід: Spec-Driven Development, модульна структура RAML
+# =============================================================
+
+title: EduFlow Learning Platform API
+version: v1
+baseUri: https://api.eduflow.example.com/{version}
+mediaType: application/json
+description: |
+  REST API для навчальної платформи EduFlow.
+  Надає доступ до управління користувачами, курсами та записами на курси.
+  Споживачі: веб-клієнт, мобільний застосунок, зовнішні інтеграційні сервіси.
+
+# --- Підключення модулів ---
+
+uses:
+  traits: traits/traits.yaml
+  resourceTypes: resourceTypes/resourceTypes.yaml
+  securitySchemes: securitySchemes/jwtBearer.yaml
+
+# --- Схеми безпеки ---
+
+securitySchemes:
+  jwtBearer: !include securitySchemes/jwtBearer.yaml
+
+# --- Типи даних ---
+
+types:
+  User: !include dataTypes/User.yaml
+  Course: !include dataTypes/Course.yaml
+  Enrollment: !include dataTypes/Enrollment.yaml
+  ErrorResponse: !include dataTypes/ErrorResponse.yaml
+
+# =============================================================
+# РЕСУРСИ
+# =============================================================
+
+/users:
+  description: Колекція користувачів платформи.
+  type:
+    resourceTypes.collection:
+      exampleCollection: !include examples/UsersListExample.yaml
+      exampleItem: !include examples/UserExample.yaml
+
+  get:
+    description: Отримати список усіх користувачів (тільки для адміністратора).
+    is:
+      - traits.pageable
+      - traits.secured
+    queryParameters:
+      role:
+        type: string
+        enum: [student, instructor, admin]
+        required: false
+        description: Фільтрація за роллю користувача.
+    responses:
+      200:
+        body:
+          application/json:
+            type: User[]
+            example: !include examples/UsersListExample.yaml
+      401:
+        body:
+          application/json:
+            type: ErrorResponse
+            example: !include examples/ErrorUnauthorizedExample.yaml
+      500:
+        body:
+          application/json:
+            type: ErrorResponse
+            example: !include examples/ErrorServerExample.yaml
+
+  post:
+    description: Реєстрація нового користувача.
+    body:
+      application/json:
+        type: User
+        example: !include examples/UserCreateExample.yaml
+    responses:
+      201:
+        body:
+          application/json:
+            type: User
+            example: !include examples/UserExample.yaml
+      400:
+        body:
+          application/json:
+            type: ErrorResponse
+            example: !include examples/ErrorValidationExample.yaml
+      401:
+        body:
+          application/json:
+            type: ErrorResponse
+            example: !include examples/ErrorUnauthorizedExample.yaml
+
+  /{userId}:
+    description: Окремий користувач за унікальним ID.
+    type:
+      resourceTypes.item:
+        exampleItem: !include examples/UserExample.yaml
+
+    uriParameters:
+      userId:
+        type: string
+        description: Унікальний ідентифікатор користувача.
+        example: "u001"
+
+    get:
+      description: Отримати дані конкретного користувача за ID.
+      is:
+        - traits.secured
+      responses:
+        200:
+          body:
+            application/json:
+              type: User
+              example: !include examples/UserExample.yaml
+        401:
+          body:
+            application/json:
+              type: ErrorResponse
+              example: !include examples/ErrorUnauthorizedExample.yaml
+        404:
+          body:
+            application/json:
+              type: ErrorResponse
+              example: !include examples/ErrorNotFoundExample.yaml
+
+    put:
+      description: Повне оновлення даних користувача.
+      is:
+        - traits.secured
+      body:
+        application/json:
+          type: User
+      responses:
+        200:
+          body:
+            application/json:
+              type: User
+        400:
+          body:
+            application/json:
+              type: ErrorResponse
+              example: !include examples/ErrorValidationExample.yaml
+        404:
+          body:
+            application/json:
+              type: ErrorResponse
+              example: !include examples/ErrorNotFoundExample.yaml
+
+    delete:
+      description: Видалити користувача (тільки адміністратор).
+      is:
+        - traits.secured
+      responses:
+        200:
+          body:
+            application/json:
+              properties:
+                message: string
+              example:
+                message: "Користувача успішно видалено."
+        404:
+          body:
+            application/json:
+              type: ErrorResponse
+              example: !include examples/ErrorNotFoundExample.yaml
+
+/courses:
+  description: Колекція навчальних курсів платформи.
+
+  get:
+    description: Отримати список курсів з пагінацією та фільтрацією.
+    is:
+      - traits.pageable
+    queryParameters:
+      category:
+        type: string
+        required: false
+        description: Фільтрація за категорією курсу.
+        example: "programming"
+      level:
+        type: string
+        enum: [beginner, intermediate, advanced]
+        required: false
+        description: Фільтрація за рівнем складності.
+    responses:
+      200:
+        body:
+          application/json:
+            type: Course[]
+            example: !include examples/CoursesListExample.yaml
+      500:
+        body:
+          application/json:
+            type: ErrorResponse
+            example: !include examples/ErrorServerExample.yaml
+
+  post:
+    description: Створити новий курс (тільки для викладача або адміністратора).
+    is:
+      - traits.secured
+    body:
+      application/json:
+        type: Course
+        example: !include examples/CourseCreateExample.yaml
+    responses:
+      201:
+        body:
+          application/json:
+            type: Course
+            example: !include examples/CourseExample.yaml
+      400:
+        body:
+          application/json:
+            type: ErrorResponse
+            example: !include examples/ErrorValidationExample.yaml
+      401:
+        body:
+          application/json:
+            type: ErrorResponse
+            example: !include examples/ErrorUnauthorizedExample.yaml
+
+  /{courseId}:
+    description: Окремий курс за ID.
+
+    uriParameters:
+      courseId:
+        type: string
+        description: Унікальний ідентифікатор курсу.
+        example: "course-001"
+
+    get:
+      description: Отримати детальну інформацію про курс.
+      responses:
+        200:
+          body:
+            application/json:
+              type: Course
+              example: !include examples/CourseExample.yaml
+        404:
+          body:
+            application/json:
+              type: ErrorResponse
+              example: !include examples/ErrorNotFoundExample.yaml
+
+    put:
+      description: Повне оновлення курсу (тільки автор курсу або адміністратор).
+      is:
+        - traits.secured
+      body:
+        application/json:
+          type: Course
+      responses:
+        200:
+          body:
+            application/json:
+              type: Course
+        400:
+          body:
+            application/json:
+              type: ErrorResponse
+        404:
+          body:
+            application/json:
+              type: ErrorResponse
+              example: !include examples/ErrorNotFoundExample.yaml
+
+    delete:
+      description: Видалити курс (тільки адміністратор).
+      is:
+        - traits.secured
+      responses:
+        200:
+          body:
+            application/json:
+              properties:
+                message: string
+              example:
+                message: "Курс успішно видалено."
+        404:
+          body:
+            application/json:
+              type: ErrorResponse
+              example: !include examples/ErrorNotFoundExample.yaml
+
+    /lessons:
+      description: Колекція уроків у межах конкретного курсу.
+
+      get:
+        description: Отримати список усіх уроків курсу.
+        is:
+          - traits.secured
+        responses:
+          200:
+            body:
+              application/json:
+                properties:
+                  courseId: string
+                  lessons:
+                    type: array
+                    items:
+                      properties:
+                        id: string
+                        title: string
+                        duration: integer
+                        order: integer
+                example:
+                  courseId: "course-001"
+                  lessons:
+                    - id: "lesson-001"
+                      title: "Вступ до Python"
+                      duration: 45
+                      order: 1
+                    - id: "lesson-002"
+                      title: "Змінні та типи даних"
+                      duration: 60
+                      order: 2
+          404:
+            body:
+              application/json:
+                type: ErrorResponse
+                example: !include examples/ErrorNotFoundExample.yaml
+
+/enrollments:
+  description: Колекція записів студентів на курси.
+
+  get:
+    description: Отримати список записів (фільтрація за userId або courseId).
+    is:
+      - traits.secured
+      - traits.pageable
+    queryParameters:
+      userId:
+        type: string
+        required: false
+        description: Фільтрація записів конкретного студента.
+        example: "u001"
+      courseId:
+        type: string
+        required: false
+        description: Фільтрація записів на конкретний курс.
+        example: "course-001"
+    responses:
+      200:
+        body:
+          application/json:
+            type: Enrollment[]
+            example: !include examples/EnrollmentsListExample.yaml
+      401:
+        body:
+          application/json:
+            type: ErrorResponse
+            example: !include examples/ErrorUnauthorizedExample.yaml
+
+  post:
+    description: Записатись на курс (студент записується на курс).
+    is:
+      - traits.secured
+    body:
+      application/json:
+        properties:
+          userId:
+            type: string
+            description: ID студента.
+          courseId:
+            type: string
+            description: ID курсу.
+        example:
+          userId: "u001"
+          courseId: "course-001"
+    responses:
+      201:
+        body:
+          application/json:
+            type: Enrollment
+            example: !include examples/EnrollmentExample.yaml
+      400:
+        body:
+          application/json:
+            type: ErrorResponse
+            example: !include examples/ErrorValidationExample.yaml
+      401:
+        body:
+          application/json:
+            type: ErrorResponse
+            example: !include examples/ErrorUnauthorizedExample.yaml
+      404:
+        body:
+          application/json:
+            type: ErrorResponse
+            example: !include examples/ErrorNotFoundExample.yaml
+
+  /{enrollmentId}:
+    description: Окремий запис на курс.
+
+    uriParameters:
+      enrollmentId:
+        type: string
+        description: Унікальний ідентифікатор запису.
+        example: "enr-001"
+
+    get:
+      description: Отримати деталі конкретного запису на курс.
+      is:
+        - traits.secured
+      responses:
+        200:
+          body:
+            application/json:
+              type: Enrollment
+              example: !include examples/EnrollmentExample.yaml
+        404:
+          body:
+            application/json:
+              type: ErrorResponse
+              example: !include examples/ErrorNotFoundExample.yaml
+
+    delete:
+      description: Відписатись від курсу (скасувати запис).
+      is:
+        - traits.secured
+      responses:
+        200:
+          body:
+            application/json:
+              properties:
+                message: string
+              example:
+                message: "Запис на курс успішно скасовано."
+        404:
+          body:
+            application/json:
+              type: ErrorResponse
+              example: !include examples/ErrorNotFoundExample.yaml

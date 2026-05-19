@@ -1,0 +1,9 @@
+id: "course-001"
+title: "Python для початківців"
+description: "Базовий курс Python для тих, хто починає програмувати з нуля."
+instructorId: "u042"
+category: "programming"
+level: "beginner"
+durationHours: 20
+isPublished: true
+createdAt: "2025-02-10T09:00:00Z"

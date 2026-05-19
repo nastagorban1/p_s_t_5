@@ -1,0 +1,74 @@
+#%RAML 1.0 DataType
+# =============================================================
+# Тип даних: Course (Курс)
+# Файл: dataTypes/Course.yaml
+# =============================================================
+
+displayName: Course
+description: |
+  Модель навчального курсу платформи EduFlow.
+  Курс може мати кілька уроків і може бути відкритим або закритим.
+
+type: object
+properties:
+  id:
+    type: string
+    description: Унікальний ідентифікатор курсу (генерується системою).
+    required: true
+    example: "course-001"
+  title:
+    type: string
+    description: Назва курсу.
+    minLength: 3
+    maxLength: 300
+    required: true
+    example: "Python для початківців"
+  description:
+    type: string
+    description: Детальний опис курсу.
+    required: true
+    example: "Базовий курс Python для тих, хто починає програмувати з нуля."
+  instructorId:
+    type: string
+    description: ID викладача, який веде курс.
+    required: true
+    example: "u042"
+  category:
+    type: string
+    description: Категорія курсу для фільтрації.
+    required: true
+    example: "programming"
+  level:
+    type: string
+    description: Рівень складності курсу.
+    enum: [beginner, intermediate, advanced]
+    required: true
+    example: "beginner"
+  durationHours:
+    type: integer
+    description: Загальна тривалість курсу в годинах.
+    minimum: 1
+    required: true
+    example: 20
+  isPublished:
+    type: boolean
+    description: Чи опублікований курс (доступний для запису).
+    required: true
+    default: false
+    example: true
+  createdAt:
+    type: datetime
+    description: Дата і час створення курсу (UTC, ISO 8601).
+    required: true
+    example: "2025-02-10T09:00:00Z"
+
+example:
+  id: "course-001"
+  title: "Python для початківців"
+  description: "Базовий курс Python для тих, хто починає програмувати з нуля."
+  instructorId: "u042"
+  category: "programming"
+  level: "beginner"
+  durationHours: 20
+  isPublished: true
+  createdAt: "2025-02-10T09:00:00Z"

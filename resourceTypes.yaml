@@ -1,0 +1,72 @@
+#%RAML 1.0 Library
+# =============================================================
+# Фрагмент: Resource Types (шаблони ресурсів)
+# Файл: resourceTypes/resourceTypes.yaml
+# =============================================================
+# Resource Types визначають стандартні шаблони для колекцій
+# та окремих елементів, щоб уникнути повторення одних і тих
+# самих методів (GET, POST, PUT, DELETE) у кожному ресурсі.
+# =============================================================
+
+usage: Підключайте resource types через "type:" у визначенні ресурсу.
+
+resourceTypes:
+
+  # --- Шаблон: Колекція (collection) ---
+  # Стандартний шаблон для /resources:
+  # GET  — отримати список
+  # POST — створити елемент
+  collection:
+    description: Стандартний шаблон для ресурсу-колекції.
+    get:
+      description: Отримати список елементів колекції.
+      responses:
+        200:
+          description: Список успішно отримано.
+          body:
+            application/json:
+              example: <<exampleCollection>>
+        500:
+          description: Внутрішня помилка сервера.
+    post:
+      description: Створити новий елемент у колекції.
+      responses:
+        201:
+          description: Елемент успішно створено.
+          body:
+            application/json:
+              example: <<exampleItem>>
+        400:
+          description: Невалідні вхідні дані.
+
+  # --- Шаблон: Окремий елемент (item) ---
+  # Стандартний шаблон для /resources/{id}:
+  # GET    — отримати елемент
+  # PUT    — оновити елемент
+  # DELETE — видалити елемент
+  item:
+    description: Стандартний шаблон для окремого елемента ресурсу.
+    get:
+      description: Отримати елемент за ID.
+      responses:
+        200:
+          description: Елемент успішно знайдено.
+          body:
+            application/json:
+              example: <<exampleItem>>
+        404:
+          description: Елемент не знайдено.
+    put:
+      description: Повністю оновити елемент за ID.
+      responses:
+        200:
+          description: Елемент успішно оновлено.
+        404:
+          description: Елемент не знайдено.
+    delete:
+      description: Видалити елемент за ID.
+      responses:
+        200:
+          description: Елемент успішно видалено.
+        404:
+          description: Елемент не знайдено.

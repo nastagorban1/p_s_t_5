@@ -1,0 +1,57 @@
+#%RAML 1.0 Library
+# =============================================================
+# Фрагмент: Traits (повторювані характеристики ендпоінтів)
+# Файл: traits/traits.yaml
+# =============================================================
+# Traits описують поведінку, яка може повторюватись у різних
+# ресурсах. Замість копіювання — підключення через "is:".
+# =============================================================
+
+usage: Підключайте traits через "is:" у визначенні методу.
+
+traits:
+
+  # --- Trait: Пагінація ---
+  # Будь-який GET-ендпоінт колекції може підключити цей trait,
+  # щоб автоматично отримати параметри page і limit.
+  pageable:
+    description: Додає підтримку пагінації через query parameters.
+    queryParameters:
+      page:
+        type: integer
+        minimum: 1
+        default: 1
+        required: false
+        description: Номер сторінки (починаючи з 1).
+        example: 1
+      limit:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+        required: false
+        description: Кількість елементів на сторінці (від 1 до 100).
+        example: 20
+
+  # --- Trait: Захищений ендпоінт ---
+  # Підключається до будь-якого методу, який вимагає
+  # JWT-автентифікації. Додає відповідь 401 автоматично.
+  secured:
+    description: Ендпоінт захищений Bearer JWT токеном.
+    headers:
+      Authorization:
+        type: string
+        description: JWT Bearer токен для автентифікації.
+        pattern: "^Bearer .+$"
+        example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    responses:
+      401:
+        description: Відсутній або недійсний токен авторизації.
+        body:
+          application/json:
+            properties:
+              code: string
+              message: string
+            example:
+              code: "UNAUTHORIZED"
+              message: "Доступ заборонено. Передайте дійсний Bearer токен."
